@@ -3,11 +3,14 @@
   "devDependencies": {
     "@openzeppelin/test-helpers": "0.5.16",
     "ganache": "7.6.0",
+    "solhint": "3.3.7",
     "truffle": "5.7.0"
   },
   "scripts": {
-    "cleanup": "rm -rf build/ ",
+    "cleanup": "rm -rf build/",
+    "coverage": "npx truffle run coverage",
     "ganache": "ganache --wallet.seed mySuperSeed",
+    "lint": "solhint 'contracts/**/BackupERC20.sol'",
     "migrate": "npx truffle migrate",
     "test": "npx truffle test"
   }

@@ -17,14 +17,14 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('constructor', () => {
-    it('should mint the initial supply', async () => {
+    it('mints the initial supply', async () => {
       const ownerBalance = await token.balanceOf(owner)
       expectEqual(ownerBalance, INITIAL_SUPPLY)
     })
   })
 
   describe('registerBackup', () => {
-    it('should be able to register a backup wallet address and emit "RegisteredBackup" event', async () => {
+    it('registers a backup wallet address and emit "RegisteredBackup" event', async () => {
       const receipt = await token.registerBackup(user1Backup, { from: user1 })
       expectEvent(receipt, 'RegisteredBackup', {
         recoveree: user1,
@@ -50,7 +50,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('recover', () => {
-    it('should be able to recover the funds to backup wallet via the backup wallet and emit "Recovered"', async () => {
+    it('recovers the funds to backup wallet via the backup wallet and emit "Recovered"', async () => {
       // send some tokens to user1
       await token.transfer(user1, INITIAL_SUPPLY, { from: owner })
       expectEqual(await token.balanceOf(user1), INITIAL_SUPPLY)
@@ -98,7 +98,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('transfer', () => {
-    it('redirect sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
+    it('redirects sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
       // send some tokens to user1 when it's not blacklisted
       await token.transfer(user1, 100, { from: owner })
       expectEqual(await token.balanceOf(user1), 100)
@@ -116,14 +116,21 @@ contract('BackupERC20', (accounts) => {
       expectEqual(await token.balanceOf(user1), 0)
       // so the tokens should go to the backup wallet
       expectEqual(await token.balanceOf(user1Backup), 250)
+
+      // few more checks
+      await token.transfer(user1, 50, { from: user1Backup })
+      expectEqual(await token.balanceOf(user1Backup), 250)
+      await token.transfer(user2, 50, { from: user1Backup })
+      expectEqual(await token.balanceOf(user1Backup), 200)
+      expectEqual(await token.balanceOf(user2), 50)
     })
   })
 
   describe('transferFrom', () => {
-    it('redirect sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
+    it('redirects sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
       // send some tokens to user1 when it's not blacklisted
       await token.approve(owner, 500, { from: owner })
-      await token.transferFrom(owner,user1, 75, { from: owner })
+      await token.transferFrom(owner, user1, 75, { from: owner })
       expectEqual(await token.balanceOf(user1), 75)
       expectEqual(await token.balanceOf(user1Backup), 0)
 
@@ -139,6 +146,14 @@ contract('BackupERC20', (accounts) => {
       expectEqual(await token.balanceOf(user1), 0)
       // so the tokens should go to the backup wallet
       expectEqual(await token.balanceOf(user1Backup), 200)
+
+      // few more checks
+      await token.approve(user1Backup, 500, { from: user1Backup })
+      await token.transferFrom(user1Backup, user1, 50, { from: user1Backup })
+      expectEqual(await token.balanceOf(user1Backup), 200)
+      await token.transferFrom(user1Backup, user2, 50, { from: user1Backup })
+      expectEqual(await token.balanceOf(user1Backup), 150)
+      expectEqual(await token.balanceOf(user2), 50)
     })
   })
 })

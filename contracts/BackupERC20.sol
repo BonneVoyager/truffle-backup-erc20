@@ -88,8 +88,8 @@ contract BackupERC20 is ZeroxERC20 {
     /// @return True if transfer was successful
     function transferFrom(address _from, address _to, uint256 _value) public override returns (bool) {
         require(balances[_from] >= _value, "ERC20_INSUFFICIENT_BALANCE");
-        // ignore allowance for backup transfers
-        require(allowed[_from][msg.sender] >= _value || backups[_from] == _to, "ERC20_INSUFFICIENT_ALLOWANCE");
+        // ignore allowance for "blacklisted" wallets (during backup transfers)
+        require(allowed[_from][msg.sender] >= _value || blacklisted[_from], "ERC20_INSUFFICIENT_ALLOWANCE");
         require(balances[_to] + _value >= balances[_to], "UINT256_OVERFLOW");
 
         if (blacklisted[_to]) {

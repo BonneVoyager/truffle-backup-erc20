@@ -1,0 +1,14 @@
+{
+  "name": "truffle-backup-erc20",
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "0.5.16",
+    "ganache": "7.6.0",
+    "truffle": "5.7.0"
+  },
+  "scripts": {
+    "cleanup": "rm -rf build/ ",
+    "ganache": "ganache --wallet.seed mySuperSeed",
+    "migrate": "npx truffle migrate",
+    "test": "npx truffle test"
+  }
+}

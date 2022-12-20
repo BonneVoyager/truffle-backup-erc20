@@ -24,7 +24,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('registerBackup', () => {
-    it('registers a backup wallet address and emit "RegisteredBackup" event', async () => {
+    it('registers a backup wallet address and emits "RegisteredBackup" event', async () => {
       const receipt = await token.registerBackup(user1Backup, { from: user1 })
       expectEvent(receipt, 'RegisteredBackup', {
         recoveree: user1,
@@ -50,7 +50,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('recover', () => {
-    it('recovers the funds to backup wallet via the backup wallet and emit "Recovered"', async () => {
+    it('recovers the funds to backup wallet via the backup wallet and emits "Recovered"', async () => {
       // send some tokens to user1
       await token.transfer(user1, INITIAL_SUPPLY, { from: owner })
       expectEqual(await token.balanceOf(user1), INITIAL_SUPPLY)
@@ -89,7 +89,7 @@ contract('BackupERC20', (accounts) => {
       // some other user signs the recovery message
       const { r, s, v } = await signEIP712(user2, token.address)
 
-      // to then tries to recover user1 funds
+      // to then try to recover user1 funds
       await expectRevert(
         token.recover(v, r, s, user1, { from: user2 }),
         'ERC20_BACKUP_INVALID_SIG',
@@ -98,7 +98,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('transfer', () => {
-    it('redirects sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
+    it('redirects sent tokens to backup wallet when the initial recipent was "blacklisted"', async () => {
       // send some tokens to user1 when it's not blacklisted
       await token.transfer(user1, 100, { from: owner })
       expectEqual(await token.balanceOf(user1), 100)
@@ -127,7 +127,7 @@ contract('BackupERC20', (accounts) => {
   })
 
   describe('transferFrom', () => {
-    it('redirects sent tokens to backup wallet when the initial one was already "blacklisted"', async () => {
+    it('redirects sent tokens to backup wallet when the initial recipent was "blacklisted"', async () => {
       // send some tokens to user1 when it's not blacklisted
       await token.approve(owner, 500, { from: owner })
       await token.transferFrom(owner, user1, 75, { from: owner })

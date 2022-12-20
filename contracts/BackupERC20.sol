@@ -13,14 +13,14 @@ contract BackupERC20 is ZeroxERC20 {
     // mapping of backup addresses for the token holders
     mapping(address => address) public backups;
 
-    // mapping of blacklisted addresses
+    // mapping of blacklisted addresses, funds transferred to those addresses will be redirected to backup addresses
     mapping(address => bool) public blacklisted;
 
     event Recovered(address indexed who, address indexed recoveree, address indexed backup, uint256 amount);
     event RegisteredBackup(address indexed recoveree, address indexed backup);
 
     constructor(uint256 _initialSupply) {
-        // initiall minting of the tokens
+        // initial minting of the tokens
         balances[msg.sender] += _initialSupply;
         _totalSupply += _initialSupply;
         emit Transfer(address(0), msg.sender, _initialSupply);
@@ -39,7 +39,7 @@ contract BackupERC20 is ZeroxERC20 {
         return true;
     }
 
-    /// @dev recover the backup by signature on behalf of a signer and bans the recoveree address.
+    /// @dev recover the backup by signature on behalf of a signer and blacklists the recoveree address.
     /// @param _v v sign value
     /// @param _r r sign value
     /// @param _s s sign value
@@ -67,14 +67,11 @@ contract BackupERC20 is ZeroxERC20 {
         require(balances[_to] + _value >= balances[_to], "UINT256_OVERFLOW");
 
         if (blacklisted[_to]) {
-            balances[msg.sender] -= _value;
-            balances[backups[_to]] += _value;
-            emit Transfer(msg.sender, backups[_to], _value);
-        } else {
-            balances[msg.sender] -= _value;
-            balances[_to] += _value;
-            emit Transfer(msg.sender, _to, _value);
+            _to = backups[_to];
         }
+        balances[msg.sender] -= _value;
+        balances[_to] += _value;
+        emit Transfer(msg.sender, _to, _value);
 
         return true;
     }
@@ -93,17 +90,14 @@ contract BackupERC20 is ZeroxERC20 {
         require(balances[_to] + _value >= balances[_to], "UINT256_OVERFLOW");
 
         if (blacklisted[_to]) {
-            balances[backups[_to]] += _value;
-            balances[_from] -= _value;
-            emit Transfer(_from, backups[_to], _value);
-        } else {
-            balances[_to] += _value;
-            balances[_from] -= _value;
-            if (backups[_from] != _to) {
-                allowed[_from][msg.sender] -= _value;
-            }
-            emit Transfer(_from, _to, _value);
+            _to = backups[_to];
         }
+        balances[_to] += _value;
+        balances[_from] -= _value;
+        if (backups[_from] != _to) {
+            allowed[_from][msg.sender] -= _value;
+        }
+        emit Transfer(_from, _to, _value);
 
         return true;
     }
